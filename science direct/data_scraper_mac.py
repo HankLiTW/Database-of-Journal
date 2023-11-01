@@ -16,17 +16,10 @@ def data_scraper_redirect(scraper, url):
     if response.status_code == 200:
         page_source = response.text
         soup = BeautifulSoup(page_source, 'html.parser')
-        encoded_url = soup.find('input', {'id': 'redirectURL'})['value']
-        redirect_url = urllib.parse.unquote(encoded_url)
-        random_wait_time = random.uniform(1, 2)
-        time.sleep(random_wait_time)
-        response = scraper.get(redirect_url)
-        new_html = response.text
-        new_soup = BeautifulSoup(new_html, 'html.parser')
     else:
         print("fail to open")
-        new_soup = None
-    return new_soup
+        soup = None
+    return soup
 
 
 def data_check(journal_name, redo=False, start=0):
@@ -41,16 +34,15 @@ def data_check(journal_name, redo=False, start=0):
     # create scraper
     scraper = cloudscraper.create_scraper()
     if redo == False:
-        df = pd.read_csv(f"{journal_name}_api.csv", index_col=0)
+        df = pd.read_csv(f"{journal_name}_api.csv")
     else:
-        df = pd.read_csv(f"{journal_name}.csv", index_col=0)
+        df = pd.read_csv(f"{journal_name}.csv")
     count = start + 1
     total = len(df["URL"])
 
     for index, row in df.iloc[start:].iterrows():
         url = row["URL"]
         print(url)
-        affiliation = row["Affiliations"]
         affiliation_list = []
         authors_list = []
         print("open")
@@ -110,7 +102,6 @@ def data_check(journal_name, redo=False, start=0):
                                         volume, issue, url]
                 print(result_df.iloc[index])
                 print('success', count, "/", total)
-
         except Exception as e:
                 print(f"An error occurred: {e}", count, "/", total)
         finally:
@@ -239,7 +230,7 @@ def taiwan_filter(journal_name):
 
 if __name__ == '__main__':
     #範例
-    journal_list = ["European Economics Review","Journal of Accounting and Economics", "Journal of Development Economics"]
+    journal_list = ["Journal of Financial Economics"]
     for journal in journal_list:
         data_check(journal, redo=False, start=0)
         taiwan_filter(journal)
