@@ -209,7 +209,7 @@ def taiwan_filter(journal_name):
 
 if __name__ == '__main__':
     #範例
-    journal_list = ["The Quarterly Journal of Economics"]
+    journal_list = ["test"]
     for journal in journal_list:
         data_check(journal, redo=False, start=0)
         taiwan_filter(journal)
