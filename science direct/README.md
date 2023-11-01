@@ -85,7 +85,7 @@ json
 !pip install beautifulsoup4
 
 ### Other software
-1. 你會需要安裝chromedriver(https://chromedriver.chromium.org/downloads)，請根據你的google chrome的版本去找到相對應的chromedrive版本。
+1. 你會需要安裝chromedriver(https://chromedriver.chromium.org/downloads )，請根據你的google chrome的版本去找到相對應的chromedrive版本。
 2. 你會需要下載stealth.min.js這個檔案，我已經一併放在資料夾裡面了。
 ### Method
 Windows的爬蟲不能像Mac一樣用傳統的request方式，網站都會擋住，所以我們只能用webdriver去模擬網頁，這個方法的缺點就是你的電腦會被網頁占用。
