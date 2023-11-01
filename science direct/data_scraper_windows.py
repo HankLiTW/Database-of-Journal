@@ -42,20 +42,18 @@ def data_check(journal_name, redo=False, start=0):
     # record error
     error_occur = False
     if redo == False:
-        df = pd.read_csv(f"{journal_name}_api.csv", index_col=0)
+        df = pd.read_csv(f"{journal_name}_api.csv")
     else:
-        df = pd.read_csv(f"{journal_name}.csv", index_col=0)
+        df = pd.read_csv(f"{journal_name}.csv")
     count = start + 1
-    total = len(df["DOI"])
+    total = len(df["URL"])
     for index, row in df.iloc[start:].iterrows():
         url = row["URL"]
         print(url)
-        affiliation = row["Affiliations"]
         affiliation_list = []
         authors_list = []
-        if pd.isna(affiliation) or df.iloc[index]["Title"] == df.iloc[index - 1]["Title"]:
-            print("open")
-            try:
+        print("open")
+        try:
                 # create scraper
                 driver = webdriver.Chrome()
                 #sleep
@@ -114,15 +112,11 @@ def data_check(journal_name, redo=False, start=0):
                                         volume, issue, url]
                 print(result_df.iloc[index])
                 print('success', count, "/", total)
-
-            except Exception as e:
+        except Exception as e:
                 print(f"An error occurred: {e}", count, "/", total)
-            finally:
+        finally:
                 count += 1
                 driver.quit()
-        else:
-            count += 1
-            print(f"Skipping {url} as Affiliations is not empty.", count, "/", total)
 
     if error_occur == False:
         result_df['Volume'] = result_df['Volume'].astype(int)
@@ -246,7 +240,7 @@ def taiwan_filter(journal_name):
 
 if __name__ == '__main__':
     #範例
-    journal_list = ["journal of financial economics"]
+    journal_list = ["Journal of Financial Economics"]
     for journal in journal_list:
         data_check(journal, redo=False, start=0)
         taiwan_filter(journal)

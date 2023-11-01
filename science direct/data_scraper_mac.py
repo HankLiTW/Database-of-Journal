@@ -45,7 +45,7 @@ def data_check(journal_name, redo=False, start=0):
     else:
         df = pd.read_csv(f"{journal_name}.csv", index_col=0)
     count = start + 1
-    total = len(df["DOI"])
+    total = len(df["URL"])
 
     for index, row in df.iloc[start:].iterrows():
         url = row["URL"]
@@ -53,9 +53,8 @@ def data_check(journal_name, redo=False, start=0):
         affiliation = row["Affiliations"]
         affiliation_list = []
         authors_list = []
-        if pd.isna(affiliation) or df.iloc[index]["Title"] == df.iloc[index - 1]["Title"]:
-            print("open")
-            try:
+        print("open")
+        try:
                 # sleep not to be detected
                 random_wait_object = random.uniform(1, 100)
                 if count % 100 == random_wait_object:
@@ -112,14 +111,10 @@ def data_check(journal_name, redo=False, start=0):
                 print(result_df.iloc[index])
                 print('success', count, "/", total)
 
-            except Exception as e:
+        except Exception as e:
                 print(f"An error occurred: {e}", count, "/", total)
-            finally:
+        finally:
                 count += 1
-        else:
-            count += 1
-            print(f"Skipping {url} as Affiliations is not empty.", count, "/", total)
-
     if error_occur == False:
         result_df['Volume'] = result_df['Volume'].astype(int)
         result_df.sort_values(by='Volume', ascending=False, inplace=True)

@@ -15,7 +15,7 @@ user_agents = [
 ]
 
 # Define a function to extract and save links with random delays
-def extract_and_save_links_with_delay(input_csv_filename, output_csv_filename):
+def extract_and_save_links_with_delay(input_csv_filename, output_csv_filename,start_index=0):
     with open(input_csv_filename, mode="r") as input_file, open(output_csv_filename, mode="w", newline='') as output_file:
         print('open successfully', input_file, output_file)
         csv_reader = csv.reader(input_file)
@@ -25,7 +25,6 @@ def extract_and_save_links_with_delay(input_csv_filename, output_csv_filename):
         writer.writerow(["URL"])  # Write the header row
 
         current_index = 0
-        start_index = 275
         for row in csv_reader:
             if current_index >= start_index:
                 article_link = row[0]
@@ -60,7 +59,7 @@ if __name__ == "__main__":
             # Set the output file name to "Journal of Development Economics.csv" for all input files
             input_file_url = f"{input_file}_url.csv"
             output_file = f"{input_file}_api.csv"
-            executor.submit(extract_and_save_links_with_delay, input_file_url, output_file)
+            executor.submit(extract_and_save_links_with_delay, input_file_url, output_file,start_index=0)
 
 
 
