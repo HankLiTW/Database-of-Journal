@@ -23,7 +23,7 @@ Review of Economics Dynamics
 在跑的過程中，可能有個別期刊他的網站跟人家長得不一樣，所以跑不出來，你們可以先試著改看看。
 改的過程中，用我寫的單個網頁爬蟲的function(data_driver 或者 data_scraper_redirect)，print出soup去網頁結構。
 通常，會需要你們直接點進去網頁裡面，找到作者的affiliation，然後在結構中搜尋找到對應位置，接下來，如果看不懂，丟chatgpt叫他教你。
-雖然只要網頁結構複雜一點他的程式會亂寫，但是他還是能教你看懂網頁結構，所以就造著他所解釋的網頁結構去寫程式，真的改不好跟我說我幫你們改。
+雖然只要網頁結構複雜一點他的程式會亂寫，但是他還是能教你看懂網頁結構，所以就照著他所解釋的網頁結構去寫程式，真的改不好跟我說我幫你們改。
 不過對各位比較不好意思的是，因為趕時間，所以我沒有管程式的架構好不好維護，所以委屈各位看亂七八糟的code了，如果要改看不懂跟我說。
 ## Note
 1. 程式分為Mac和Windows兩個版本，分別用不同方式抓網頁結構，請根據你的電腦系統來使用程式。
@@ -75,11 +75,14 @@ BeautifulSoup
 
 json
 ### Install
-pip install -U selenium
+打開你的cmd，輸入以下指令，有些電腦不用在pip前加驚嘆號;有些電腦會不行安裝，不行的話搜尋一下怎麼解決安裝問題，真的搞不定跟我說。<br>
+通常windows是因為沒有添加環境變數進path，如果遇到pip不認識去查一下怎麼加入。
 
-pip install pandas
+!pip install -U selenium
 
-pip install beautifulsoup4
+!pip install pandas
+
+!pip install beautifulsoup4
 
 ### Other software
 1. 你會需要安裝chromedriver(https://chromedriver.chromium.org/downloads)，請根據你的google chrome的版本去找到相對應的chromedrive版本。
