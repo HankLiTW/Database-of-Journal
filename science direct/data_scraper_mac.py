@@ -71,12 +71,14 @@ def data_check(journal_name, redo=False, start=0):
                                 if affiliation_info.get('#name') == 'affiliation':
                                     if affiliation_info:
                                         affiliation_text = affiliation_info.get('$$', [{}])[0].get("_")
-                                        contains_key_word = any(key_word in affiliation_text for key_word in key_words)
-                                        if contains_key_word:
-                                            affiliation_list.append(affiliation_text)
-                                        else:
-                                            affiliation_text = affiliation_info.get('$$', [{}])[1].get("_")
-                                            affiliation_list.append(affiliation_text)
+                                        if affiliation_text:
+                                            contains_key_word = any(key_word in affiliation_text for key_word in key_words)
+                                            if contains_key_word:
+                                                affiliation_list.append(affiliation_text)
+                                            else:
+                                                if affiliation_info.get('$$', [{}])[1].get("_"):
+                                                    affiliation_text = affiliation_info.get('$$', [{}])[1].get("_")
+                                                    affiliation_list.append(affiliation_text)
                         # author name
                         for author_group in json_data['authors'].get('content', []):
                             for author_data in author_group.get('$$', []):
@@ -104,6 +106,7 @@ def data_check(journal_name, redo=False, start=0):
                 print(result_df.iloc[index])
                 print('success', count, "/", total)
         except Exception as e:
+                traceback.print_exc()
                 print(f"An error occurred: {e}", count, "/", total)
         finally:
                 count += 1

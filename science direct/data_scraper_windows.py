@@ -1,4 +1,6 @@
 # windows
+import traceback
+
 from selenium import webdriver
 import pandas as pd
 import random
@@ -81,12 +83,14 @@ def data_check(journal_name, redo=False, start=0):
                                 if affiliation_info.get('#name') == 'affiliation':
                                     if affiliation_info:
                                         affiliation_text = affiliation_info.get('$$', [{}])[0].get("_")
-                                        contains_key_word = any(key_word in affiliation_text for key_word in key_words)
-                                        if contains_key_word:
-                                            affiliation_list.append(affiliation_text)
-                                        else:
-                                            affiliation_text = affiliation_info.get('$$', [{}])[1].get("_")
-                                            affiliation_list.append(affiliation_text)
+                                        if affiliation_text:
+                                            contains_key_word = any(key_word in affiliation_text for key_word in key_words)
+                                            if contains_key_word :
+                                                affiliation_list.append(affiliation_text)
+                                            else:
+                                                if affiliation_info.get('$$', [{}])[1].get("_"):
+                                                    affiliation_text = affiliation_info.get('$$', [{}])[1].get("_")
+                                                    affiliation_list.append(affiliation_text)
                         # author name
                         for author_group in json_data['authors'].get('content', []):
                             for author_data in author_group.get('$$', []):
@@ -106,6 +110,7 @@ def data_check(journal_name, redo=False, start=0):
                 title = new_soup.find('meta', {'name': 'citation_title'})['content']
                 publication_date = new_soup.find('meta', {'name': 'citation_publication_date'})['content']
                 # integrate
+                authors_str = "test"
                 authors_str = '; '.join(f"{author['given-name']} {author['surname']}" for author in authors_list)
                 author_institutions_str = '; '.join(affiliation_list)
                 # update df
@@ -114,6 +119,7 @@ def data_check(journal_name, redo=False, start=0):
                 print(result_df.iloc[index])
                 print('success', count, "/", total)
         except Exception as e:
+                traceback.print_exc()
                 print(f"An error occurred: {e}", count, "/", total)
         finally:
                 count += 1
