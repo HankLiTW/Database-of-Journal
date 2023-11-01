@@ -1,11 +1,11 @@
 # 更改後
 # mac
+import traceback
 import cloudscraper
 import pandas as pd
 import random
 import time
 from bs4 import BeautifulSoup
-import urllib.parse
 import json
 
 
