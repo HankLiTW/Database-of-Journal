@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 import json
 
 
-def data_driver(driver, url):
+def data_driver(driver, url,count):
     with open('stealth.min.js', "r") as f:
         js = f.read()
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
@@ -15,6 +15,15 @@ def data_driver(driver, url):
         })
 
     driver.get(url)
+    #sleep
+    random_wait_object = random.uniform(1, 100)
+    if count % 100 == random_wait_object:
+        random_wait_time = random.uniform(60, 80)
+    elif count % 500 == 0 and count != 0:
+        random_wait_time = random.uniform(600, 1000)
+    else:
+        random_wait_time = random.uniform(5, 12)
+    time.sleep(random_wait_time)
     page_source = driver.page_source
     soup = BeautifulSoup(page_source, 'html.parser')
     """
@@ -55,15 +64,7 @@ def data_check(journal_name, redo=False, start=0):
         if pd.isna(affiliation) or df.iloc[index]["Title"] == df.iloc[index - 1]["Title"]:
             print("open")
             try:
-                random_wait_object = random.uniform(1, 100)
-                if count % 100 == random_wait_object:
-                    random_wait_time = random.uniform(60, 80)
-                elif count % 500 == 0 and count != 0:
-                    random_wait_time = random.uniform(600, 1000)
-                else:
-                    random_wait_time = random.uniform(5, 12)
-                time.sleep(random_wait_time)
-                new_soup = data_driver(driver, url)
+                new_soup = data_driver(driver, url,count)
                 if new_soup:
                     script_tags = new_soup.find_all('script', type='application/json', attrs={"data-iso-key": "_0"})
                     if script_tags:
@@ -241,7 +242,7 @@ def taiwan_filter(journal_name):
 
 if __name__ == '__main__':
     #範例
-    journal_list = ["European Economics Review","Journal of Accounting and Economics", "Journal of Development Economics"]
+    journal_list = ["journal of financial economics"]
     for journal in journal_list:
         data_check(journal, redo=False, start=0)
         taiwan_filter(journal)
