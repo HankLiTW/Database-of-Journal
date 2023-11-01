@@ -45,85 +45,92 @@ def data_check(journal_name, redo=False, start=0):
     error_occur = False
     if redo == False:
         df = pd.read_csv(f"{journal_name}_api.csv")
+        result_df["URL"] = df["URL"]
     else:
         df = pd.read_csv(f"{journal_name}.csv")
-    result_df["URL"] = df["URL"]
+        result_df = df
+
     count = start + 1
     total = len(df["URL"])
-    for index, row in df.iloc[start:].iterrows():
+    for index, row in result_df.iloc[start:].iterrows():
         url = row["URL"]
         print(url)
+        affiliation = row["Affiliation"]
         affiliation_list = []
         authors_list = []
-        print("open")
-        try:
-                # create scraper
-                driver = webdriver.Chrome()
-                #sleep
-                random_wait_object = random.uniform(1, 100)
-                if count % 100 == random_wait_object:
-                    random_wait_time = random.uniform(60, 80)
-                elif count % 500 == 0 and count != 0:
-                    random_wait_time = random.uniform(600, 800)
-                else:
-                    random_wait_time = random.uniform(1,2)
-                time.sleep(random_wait_time)
-                #create soup
-                new_soup = data_driver(driver, url)
-                if new_soup:
-                    script_tags = new_soup.find_all('script', type='application/json', attrs={"data-iso-key": "_0"})
-                    if script_tags:
-                        script_tag = script_tags[0]  # Get the first script tag that matches the criteria
-                        json_text = script_tag.string or script_tag.text  # Get the text content of the script tag
-                        json_data = json.loads(json_text)  # Parse the JSON data
-                        # Affiliation
-                        authors_content = json_data.get('authors', {}).get('content', [])
-                        for author_info in authors_content:
-                            for affiliation_info in author_info.get('$$', []):
-                                if affiliation_info.get('#name') == 'affiliation':
-                                    if affiliation_info:
-                                        affiliation_text = affiliation_info.get('$$', [{}])[0].get("_")
-                                        if affiliation_text:
-                                            contains_key_word = any(key_word in affiliation_text for key_word in key_words)
-                                            if contains_key_word :
-                                                affiliation_list.append(affiliation_text)
-                                            else:
-                                                if affiliation_info.get('$$', [{}])[1].get("_"):
-                                                    affiliation_text = affiliation_info.get('$$', [{}])[1].get("_")
+        if pd.isna(affiliation) or df.iloc[index]["Title"] == df.iloc[index - 1]["Title"]:
+            print("open")
+            try:
+                    # create scraper
+                    driver = webdriver.Chrome()
+                    #sleep
+                    random_wait_object = random.uniform(1, 100)
+                    if count % 100 == random_wait_object:
+                        random_wait_time = random.uniform(60, 80)
+                    elif count % 500 == 0 and count != 0:
+                        random_wait_time = random.uniform(600, 800)
+                    else:
+                        random_wait_time = random.uniform(1,2)
+                    time.sleep(random_wait_time)
+                    #create soup
+                    new_soup = data_driver(driver, url)
+                    if new_soup:
+                        script_tags = new_soup.find_all('script', type='application/json', attrs={"data-iso-key": "_0"})
+                        if script_tags:
+                            script_tag = script_tags[0]  # Get the first script tag that matches the criteria
+                            json_text = script_tag.string or script_tag.text  # Get the text content of the script tag
+                            json_data = json.loads(json_text)  # Parse the JSON data
+                            # Affiliation
+                            authors_content = json_data.get('authors', {}).get('content', [])
+                            for author_info in authors_content:
+                                for affiliation_info in author_info.get('$$', []):
+                                    if affiliation_info.get('#name') == 'affiliation':
+                                        if affiliation_info:
+                                            affiliation_text = affiliation_info.get('$$', [{}])[0].get("_")
+                                            if affiliation_text:
+                                                contains_key_word = any(key_word in affiliation_text for key_word in key_words)
+                                                if contains_key_word :
                                                     affiliation_list.append(affiliation_text)
-                        # author name
-                        for author_group in json_data['authors'].get('content', []):
-                            for author_data in author_group.get('$$', []):
-                                if author_data.get('#name') == 'author':
-                                    author_info = {}
-                                    for field in author_data.get('$$', []):
-                                        if field.get('#name') in ['given-name', 'surname']:
-                                            field_name = field.get('#name')
-                                            field_value = field.get('_')
-                                            author_info[field_name] = field_value
-                                    authors_list.append(author_info)
+                                                else:
+                                                    if affiliation_info.get('$$', [{}])[1].get("_"):
+                                                        affiliation_text = affiliation_info.get('$$', [{}])[1].get("_")
+                                                        affiliation_list.append(affiliation_text)
+                            # author name
+                            for author_group in json_data['authors'].get('content', []):
+                                for author_data in author_group.get('$$', []):
+                                    if author_data.get('#name') == 'author':
+                                        author_info = {}
+                                        for field in author_data.get('$$', []):
+                                            if field.get('#name') in ['given-name', 'surname']:
+                                                field_name = field.get('#name')
+                                                field_value = field.get('_')
+                                                author_info[field_name] = field_value
+                                        authors_list.append(author_info)
 
-                # other information
-                volume = new_soup.find('meta', {'name': 'citation_volume'})['content']
-                issue = new_soup.find('meta', {'name': 'citation_issue'})['content']
-                journal_title = new_soup.find('meta', {'name': 'citation_journal_title'})['content']
-                title = new_soup.find('meta', {'name': 'citation_title'})['content']
-                publication_date = new_soup.find('meta', {'name': 'citation_publication_date'})['content']
-                # integrate
-                authors_str = "test"
-                authors_str = '; '.join(f"{author['given-name']} {author['surname']}" for author in authors_list)
-                author_institutions_str = '; '.join(affiliation_list)
-                # update df
-                result_df.loc[index] = [authors_str, author_institutions_str, publication_date, journal_title, title,
-                                        volume, issue, url]
-                print(result_df.iloc[index])
-                print('success', count, "/", total)
-        except Exception as e:
-                traceback.print_exc()
-                print(f"An error occurred: {e}", count, "/", total)
-        finally:
-                count += 1
-                driver.quit()
+                    # other information
+                    volume = new_soup.find('meta', {'name': 'citation_volume'})['content']
+                    issue = new_soup.find('meta', {'name': 'citation_issue'})['content']
+                    journal_title = new_soup.find('meta', {'name': 'citation_journal_title'})['content']
+                    title = new_soup.find('meta', {'name': 'citation_title'})['content']
+                    publication_date = new_soup.find('meta', {'name': 'citation_publication_date'})['content']
+                    # integrate
+                    authors_str = "test"
+                    authors_str = '; '.join(f"{author['given-name']} {author['surname']}" for author in authors_list)
+                    author_institutions_str = '; '.join(affiliation_list)
+                    # update df
+                    result_df.loc[index] = [authors_str, author_institutions_str, publication_date, journal_title, title,
+                                            volume, issue, url]
+                    print(result_df.iloc[index])
+                    print('success', count, "/", total)
+            except Exception as e:
+                    traceback.print_exc()
+                    print(f"An error occurred: {e}", count, "/", total)
+            finally:
+                    count += 1
+                    driver.quit()
+        else:
+            count+=1
+            print(f"Skipping {url} as Affiliations is not empty.", count, "/", total)
 
     if error_occur == False:
         result_df['Volume'] = result_df['Volume'].astype(int)
