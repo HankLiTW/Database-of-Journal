@@ -28,7 +28,7 @@ def data_check(journal_name, redo=False, start=0):
     result_df = pd.DataFrame(columns=columns)
     # affiliation keywords
     key_words = ["University", "Bank", "Institution", "Sinica", "Department", "Finance", "Economics", "Federal",
-                 "College", "Fund"]
+                 "College", "Fund","School"]
     # record error
     error_occur = False
     # create scraper
@@ -37,6 +37,7 @@ def data_check(journal_name, redo=False, start=0):
         df = pd.read_csv(f"{journal_name}_api.csv")
     else:
         df = pd.read_csv(f"{journal_name}.csv")
+    result_df["URL"] = df["URL"]
     count = start + 1
     total = len(df["URL"])
 
