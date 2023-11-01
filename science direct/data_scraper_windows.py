@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 import json
 
 
-def data_driver(driver, url,count):
+def data_driver(driver, url):
     with open('stealth.min.js', "r") as f:
         js = f.read()
         driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
@@ -16,13 +16,7 @@ def data_driver(driver, url,count):
 
     driver.get(url)
     #sleep
-    random_wait_object = random.uniform(1, 100)
-    if count % 100 == random_wait_object:
-        random_wait_time = random.uniform(60, 80)
-    elif count % 500 == 0 and count != 0:
-        random_wait_time = random.uniform(600, 1000)
-    else:
-        random_wait_time = random.uniform(5, 12)
+    random_wait_time = random.uniform(5, 12)
     time.sleep(random_wait_time)
     page_source = driver.page_source
     soup = BeautifulSoup(page_source, 'html.parser')
@@ -47,8 +41,6 @@ def data_check(journal_name, redo=False, start=0):
                  "College", "Fund"]
     # record error
     error_occur = False
-    # create scraper
-    driver = webdriver.Chrome()
     if redo == False:
         df = pd.read_csv(f"{journal_name}_api.csv", index_col=0)
     else:
@@ -64,7 +56,17 @@ def data_check(journal_name, redo=False, start=0):
         if pd.isna(affiliation) or df.iloc[index]["Title"] == df.iloc[index - 1]["Title"]:
             print("open")
             try:
-                new_soup = data_driver(driver, url,count)
+                # create scraper
+                driver = webdriver.Chrome()
+                #sleep
+                random_wait_object = random.uniform(1, 100)
+                if count % 100 == random_wait_object:
+                    random_wait_time = random.uniform(60, 80)
+                elif count % 500 == 0 and count != 0:
+                    random_wait_time = random.uniform(600, 1000)
+                time.sleep(random_wait_time)
+                #create soup
+                new_soup = data_driver(driver, url)
                 if new_soup:
                     script_tags = new_soup.find_all('script', type='application/json', attrs={"data-iso-key": "_0"})
                     if script_tags:
