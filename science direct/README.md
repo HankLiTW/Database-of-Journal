@@ -61,7 +61,7 @@ Mac的爬蟲是使用傳統的request的方法，只是因為大部分網頁都�
 因為每個publisher的網頁不一樣，所以都要重寫；有時候甚至同publisher但不同期刊的網頁也不一樣，但通常只需要小改，就麻煩各位如果遇到就自己改一下，不行跟我說。
 最後，程式在根據affiliation去找出台灣機構發出的論文。
 
-輸出會是一個期刊名.csv的檔案，上傳那個檔案到 https://drive.google.com/drive/folders/16rBawRt-quKhCSYysY1OaCn3TtLY9-1V?usp=sharing
+輸出會是一個期刊名_taiwan_scholar.csv的檔案，上傳那個檔案到 https://drive.google.com/drive/folders/16rBawRt-quKhCSYysY1OaCn3TtLY9-1V?usp=sharing
 ## Windows
 ### Packages
 
