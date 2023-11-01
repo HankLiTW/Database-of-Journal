@@ -93,5 +93,5 @@ Windows的爬蟲不能像Mac一樣用傳統的request方式，網站都會擋住
 其中，stealth.min.js作用是隱藏電腦訊息，以免被網站抓到是爬蟲被鎖電腦。<br>
 基本上其他方法都跟mac的相同，差別只在抓網頁結構的時候是用webdriver而不是request。
 
-同樣，輸出會是一個期刊名.csv的檔案，上傳那個檔案到 https://drive.google.com/drive/folders/16rBawRt-quKhCSYysY1OaCn3TtLY9-1V?usp=sharing
+同樣，輸出會是一個期刊名_taiwan_scholar.csv的檔案，上傳那個檔案到 https://drive.google.com/drive/folders/16rBawRt-quKhCSYysY1OaCn3TtLY9-1V?usp=sharing
 
