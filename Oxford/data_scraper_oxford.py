@@ -32,6 +32,7 @@ def data_check(journal_name, redo=False, start=0):
         df = pd.read_csv(f"{journal_name}_api.csv")
     else:
         df = pd.read_csv(f"{journal_name}.csv")
+    result_df['URL'] = df['URL']
     count = start + 1
     total = len(df["URL"])
 
