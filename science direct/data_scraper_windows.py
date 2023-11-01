@@ -16,7 +16,7 @@ def data_driver(driver, url):
 
     driver.get(url)
     #sleep
-    random_wait_time = random.uniform(5, 12)
+    random_wait_time = random.uniform(5, 10)
     time.sleep(random_wait_time)
     page_source = driver.page_source
     soup = BeautifulSoup(page_source, 'html.parser')
@@ -63,7 +63,9 @@ def data_check(journal_name, redo=False, start=0):
                 if count % 100 == random_wait_object:
                     random_wait_time = random.uniform(60, 80)
                 elif count % 500 == 0 and count != 0:
-                    random_wait_time = random.uniform(600, 1000)
+                    random_wait_time = random.uniform(600, 800)
+                else:
+                    random_wait_time = random.uniform(1,2)
                 time.sleep(random_wait_time)
                 #create soup
                 new_soup = data_driver(driver, url)
