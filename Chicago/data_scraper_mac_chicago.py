@@ -215,5 +215,5 @@ if __name__ == '__main__':
     #範例
     journal_list = ["test"]
     for journal in journal_list:
-        data_check(journal, redo=True, start=0)
+        data_check(journal, redo=False, start=0)
         taiwan_filter(journal)
