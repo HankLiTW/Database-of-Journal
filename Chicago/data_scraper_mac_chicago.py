@@ -1,4 +1,4 @@
-#Oxford
+#Chicago
 import traceback
 import cloudscraper
 import pandas as pd
@@ -35,7 +35,7 @@ def data_check(journal_name, redo=False, start=0):
     else:
         df = pd.read_csv(f"{journal_name}.csv")
         result_df = df
-    count = start + 1
+    count = start
     total = len(df["URL"])
 
     for index, row in result_df.iloc[start:].iterrows():
@@ -215,5 +215,5 @@ if __name__ == '__main__':
     #範例
     journal_list = ["test"]
     for journal in journal_list:
-        data_check(journal, redo=False, start=0)
+        data_check(journal, redo=True, start=0)
         taiwan_filter(journal)
