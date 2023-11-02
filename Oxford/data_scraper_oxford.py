@@ -1,4 +1,5 @@
 #Oxford
+import traceback
 import cloudscraper
 import pandas as pd
 import random
@@ -22,7 +23,7 @@ def data_scraper_redirect(scraper, url):
 
 def data_check(journal_name, redo=False, start=0):
     # store information
-    columns = ['Author', 'Affiliation', 'Publication Date', 'Journal Title', 'Title', 'Volume', 'Issue', 'URL']
+    columns = ['Author', 'Affiliation', 'Publication Date', 'Journal Title', 'Title', 'Volume', 'URL']
     result_df = pd.DataFrame(columns=columns)
     # record error
     error_occur = False
@@ -40,57 +41,61 @@ def data_check(journal_name, redo=False, start=0):
     for index, row in result_df.iloc[start:].iterrows():
         url = row["URL"]
         print(url)
+        affiliation = row["Affiliation"]
         affiliation_list = []
         authors_list = []
         print("open")
-        try:
-                # sleep not to be detected
-                random_wait_object = random.uniform(1, 100)
-                if count % 100 == random_wait_object:
-                    random_wait_time = random.uniform(60, 80)
-                elif count % 500 == 0 and count != 0:
-                    random_wait_time = random.uniform(600, 800)
-                else:
-                    random_wait_time = random.uniform(1,2)
-                time.sleep(random_wait_time)
-                soup = data_scraper_redirect(scraper, url)
-                if soup:
-                    script_tag = soup.find('script', type='application/ld+json')
-                    # Parse the JSON data
-                    json_text = script_tag.string or script_tag.text  # Get the text content of the script tag
-                    json_data = json.loads(json_text)  # Parse the JSON data
-                    #authors
-                    authors_info = json_data['author']
-                    if authors_info:
-                        for author in authors_info:
-                            authors_list.append(author['name'])
-                        #affiliation
-                        for affiliation in authors_info:
-                            affiliation_list.append(affiliation['affiliation'])
-                    #title
-                    title = json_data['name']
-                    #date
-                    publication_date = json_data['datePublished']
-                    #publication_title
-                    journal_title = json_data['isPartOf']['isPartOf']['name']
-                    #volumn
-                    volume_tag = soup.find('meta', attrs={'name': 'citation_volume'})
-                    volume = volume_tag['content']
-                    #issue
-                    issue = json_data['isPartOf']['issueNumber']
-                    #integrate
-                    authors_str = '; '.join(authors_list)
-                    author_institutions_str = '; '.join(affiliation_list)
-                    # update df
-                    result_df.loc[index] = [authors_str, author_institutions_str, publication_date, journal_title, title, volume, issue, url]
-                    print(result_df.iloc[index])
-                    if error_occur == False:
-                        result_df.to_csv(f'{journal_name}.csv', index=False)
-                        print('success, the file has been stored.', count, "/", total)
-        except Exception as e:
-                print(f"An error occurred: {e}", count, "/", total)
-        finally:
-                count += 1
+        if pd.isna(affiliation):
+            try:
+                    # sleep not to be detected
+                    random_wait_object = random.uniform(1, 100)
+                    if count % 100 == random_wait_object:
+                        random_wait_time = random.uniform(60, 80)
+                    elif count % 500 == 0 and count != 0:
+                        random_wait_time = random.uniform(600, 800)
+                    else:
+                        random_wait_time = random.uniform(1,2)
+                    time.sleep(random_wait_time)
+                    soup = data_scraper_redirect(scraper, url)
+                    if soup:
+                        script_tag = soup.find('script', type='application/ld+json')
+                        # Parse the JSON data
+                        json_text = script_tag.string or script_tag.text  # Get the text content of the script tag
+                        json_data = json.loads(json_text)  # Parse the JSON data
+                        #authors
+                        authors_info = json_data['author']
+                        if authors_info:
+                            for author in authors_info:
+                                authors_list.append(author['name'])
+                            #affiliation
+                            for affiliation in authors_info:
+                                affiliation_list.append(affiliation['affiliation'])
+                        #title
+                        title = json_data['name']
+                        #date
+                        publication_date = json_data['datePublished']
+                        #publication_title
+                        journal_title = json_data['isPartOf']['isPartOf']['name']
+                        #volumn
+                        volume_tag = soup.find('meta', attrs={'name': 'citation_volume'})
+                        volume = volume_tag['content']
+                        #integrate
+                        authors_str = '; '.join(authors_list)
+                        author_institutions_str = '; '.join(affiliation_list)
+                        # update df
+                        result_df.loc[index] = [authors_str, author_institutions_str, publication_date, journal_title, title, volume, url]
+                        print(result_df.iloc[index])
+                        if error_occur == False:
+                            result_df.to_csv(f'{journal_name}.csv', index=False)
+                            print('success, the file has been stored.', count, "/", total)
+            except Exception as e:
+                    traceback.print_exc()
+                    print(f"An error occurred: {e}", count, "/", total)
+            finally:
+                    count += 1
+        else:
+            count += 1
+            print(f"Skipping {url} as Affiliations is not empty.", count, "/", total)
 def taiwan_filter(journal_name):
     taiwan_universities = [
         "National Taiwan University",

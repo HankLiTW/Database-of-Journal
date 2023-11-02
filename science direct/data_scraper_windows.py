@@ -36,7 +36,7 @@ def data_driver(driver, url):
 
 def data_check(journal_name, redo=False, start=0):
     # store information
-    columns = ['Author', 'Affiliation', 'Publication Date', 'Journal Title', 'Title', 'Volume', 'Issue', 'URL']
+    columns = ['Author', 'Affiliation', 'Publication Date', 'Journal Title', 'Title', 'Volume', 'URL']
     result_df = pd.DataFrame(columns=columns)
     # affiliation keywords
     key_words = ["University", "Bank", "Institution", "Sinica", "Department", "Finance", "Economics", "Federal",
@@ -109,27 +109,26 @@ def data_check(journal_name, redo=False, start=0):
 
                     # other information
                     volume = new_soup.find('meta', {'name': 'citation_volume'})['content']
-                    issue = new_soup.find('meta', {'name': 'citation_issue'})['content']
                     journal_title = new_soup.find('meta', {'name': 'citation_journal_title'})['content']
                     title = new_soup.find('meta', {'name': 'citation_title'})['content']
                     publication_date = new_soup.find('meta', {'name': 'citation_publication_date'})['content']
                     # integrate
-                    authors_str = "test"
                     authors_str = '; '.join(f"{author['given-name']} {author['surname']}" for author in authors_list)
                     author_institutions_str = '; '.join(affiliation_list)
                     # update df
                     result_df.loc[index] = [authors_str, author_institutions_str, publication_date, journal_title, title,
-                                            volume, issue, url]
+                                            volume, url]
                     print(result_df.iloc[index])
                     if error_occur == False:
                         result_df.to_csv(f'{journal_name}.csv', index=False)
                         print('success, the file has been stored.', count, "/", total)
+                    driver.quit()
             except Exception as e:
                     traceback.print_exc()
                     print(f"An error occurred: {e}", count, "/", total)
             finally:
                     count += 1
-                    driver.quit()
+
         else:
             count+=1
             print(f"Skipping {url} as Affiliations is not empty.", count, "/", total)
