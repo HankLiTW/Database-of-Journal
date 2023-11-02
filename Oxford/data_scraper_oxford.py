@@ -30,13 +30,14 @@ def data_check(journal_name, redo=False, start=0):
     scraper = cloudscraper.create_scraper()
     if redo == False:
         df = pd.read_csv(f"{journal_name}_api.csv")
+        result_df['URL'] = df['URL']
     else:
         df = pd.read_csv(f"{journal_name}.csv")
-    result_df['URL'] = df['URL']
+        result_df = df
     count = start + 1
     total = len(df["URL"])
 
-    for index, row in df.iloc[start:].iterrows():
+    for index, row in result_df.iloc[start:].iterrows():
         url = row["URL"]
         print(url)
         affiliation_list = []
@@ -56,16 +57,16 @@ def data_check(journal_name, redo=False, start=0):
                 if soup:
                     script_tag = soup.find('script', type='application/ld+json')
                     # Parse the JSON data
-                    json_data = json.loads(script_tag.string)
                     json_text = script_tag.string or script_tag.text  # Get the text content of the script tag
                     json_data = json.loads(json_text)  # Parse the JSON data
                     #authors
                     authors_info = json_data['author']
-                    for author in authors_info:
-                        authors_list.append(author['name'])
-                    #affiliation
-                    for affiliation in authors_info:
-                        affiliation_list.append(affiliation['affiliation'])
+                    if authors_info:
+                        for author in authors_info:
+                            authors_list.append(author['name'])
+                        #affiliation
+                        for affiliation in authors_info:
+                            affiliation_list.append(affiliation['affiliation'])
                     #title
                     title = json_data['name']
                     #date
@@ -83,15 +84,13 @@ def data_check(journal_name, redo=False, start=0):
                     # update df
                     result_df.loc[index] = [authors_str, author_institutions_str, publication_date, journal_title, title, volume, issue, url]
                     print(result_df.iloc[index])
-                    print('success', count, "/", total)
+                    if error_occur == False:
+                        result_df.to_csv(f'{journal_name}.csv', index=False)
+                        print('success, the file has been stored.', count, "/", total)
         except Exception as e:
                 print(f"An error occurred: {e}", count, "/", total)
         finally:
                 count += 1
-                if error_occur == False:
-                    result_df['Volume'] = result_df['Volume'].astype(int)
-                    result_df.sort_values(by='Volume', ascending=False, inplace=True)
-                    result_df.to_csv(f'{journal_name}.csv', index=False)
 def taiwan_filter(journal_name):
     taiwan_universities = [
         "National Taiwan University",

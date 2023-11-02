@@ -108,7 +108,10 @@ def data_check(journal_name, redo=False, start=0):
                     result_df.loc[index] = [authors_str, author_institutions_str, publication_date, journal_title, title,
                                             volume, issue, url]
                     print(result_df.iloc[index])
-                    print('success', count, "/", total)
+                    if error_occur == False:
+                        result_df.to_csv(f'{journal_name}.csv', index=False)
+                        print('success, the file has been stored.', count, "/", total)
+
             except Exception as e:
                     traceback.print_exc()
                     print(f"An error occurred: {e}", count, "/", total)
@@ -118,10 +121,7 @@ def data_check(journal_name, redo=False, start=0):
             count += 1
             print(f"Skipping {url} as Affiliations is not empty.",count,"/",total)
 
-    if error_occur == False:
-        result_df['Volume'] = result_df['Volume'].astype(int)
-        result_df.sort_values(by='Volume', ascending=False, inplace=True)
-        result_df.to_csv(f'{journal_name}.csv', index=False)
+
 
 
 def taiwan_filter(journal_name):
