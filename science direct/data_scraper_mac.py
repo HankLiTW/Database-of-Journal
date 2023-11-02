@@ -40,7 +40,7 @@ def data_check(journal_name, redo=False, start=0):
         df = pd.read_csv(f"{journal_name}.csv")
         result_df = df
 
-    count = start + 1
+    count = start
     total = len(df["URL"])
 
     for index, row in result_df.iloc[start:].iterrows():
