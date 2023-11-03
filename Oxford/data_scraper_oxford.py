@@ -10,7 +10,7 @@ import json
 
 def data_scraper_redirect(scraper, url):
     response = scraper.get(url)
-    random_wait_time = random.uniform(5, 10)
+    random_wait_time = random.uniform(8, 13)
     time.sleep(random_wait_time)
     if response.status_code == 200:
         page_source = response.text
