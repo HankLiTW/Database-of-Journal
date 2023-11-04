@@ -64,6 +64,12 @@ def data_check(journal_name, redo=False, start=0):
                             if script_tag.string:
                                 try:
                                     json_data = json.loads(script_tag.string)  # Parse the JSON data
+                                    # title
+                                    title = json_data['name']
+                                    # date
+                                    publication_date = json_data['datePublished']
+                                    # publication_title
+                                    journal_title = json_data['isPartOf']['isPartOf']['name']
                                     if 'author' in json_data:
                                         authors_info = json_data['author']
                                         if authors_info:
@@ -78,12 +84,7 @@ def data_check(journal_name, redo=False, start=0):
                                                     affiliation_list.append(affiliation['affiliation'])
                                                 else:
                                                     affiliation_list.append(0)
-                                        # title
-                                        title = json_data['name']
-                                        # date
-                                        publication_date = json_data['datePublished']
-                                        # publication_title
-                                        journal_title = json_data['isPartOf']['isPartOf']['name']
+
                                 except:
                                     continue
 
