@@ -64,7 +64,6 @@ def data_check(journal_name, redo=False, start=0):
                             if script_tag.string:
                                 try:
                                     json_data = json.loads(script_tag.string)  # Parse the JSON data
-                                    print(json_data)
                                     # title
                                     title = json_data['name']
                                     # date
@@ -73,7 +72,6 @@ def data_check(journal_name, redo=False, start=0):
                                     journal_title = json_data['isPartOf']['isPartOf']['name']
                                     if 'author' in json_data:
                                         authors_info = json_data['author']
-                                        print(authors_info)
                                         if authors_info:
                                             for author in authors_info:
                                                 if author['name']:
@@ -86,6 +84,7 @@ def data_check(journal_name, redo=False, start=0):
                                                     affiliation_list.append(affiliation['affiliation'])
                                                 else:
                                                     affiliation_list.append(0)
+
                                 except:
                                     continue
 
@@ -233,7 +232,7 @@ def taiwan_filter(journal_name):
 
 if __name__ == '__main__':
     #範例
-    journal_list = ["The Review of Financial Studies"]
+    journal_list = ["The Review of Economic Studies","Review of Finance"]
     for journal in journal_list:
         data_check(journal, redo=True, start=0)
         taiwan_filter(journal)
