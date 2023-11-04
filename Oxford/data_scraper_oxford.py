@@ -35,7 +35,7 @@ def data_check(journal_name, redo=False, start=0):
     else:
         df = pd.read_csv(f"{journal_name}.csv")
         result_df = df
-    count = start
+    count = start + 1
     total = len(df["URL"])
 
     for index, row in result_df.iloc[start:].iterrows():
@@ -45,6 +45,7 @@ def data_check(journal_name, redo=False, start=0):
         affiliation_list = []
         authors_list = []
         print("open")
+        publication_date, journal_title, title = 0,0,0
         if pd.isna(affiliation):
             try:
                     # sleep not to be detected
@@ -58,24 +59,31 @@ def data_check(journal_name, redo=False, start=0):
                     time.sleep(random_wait_time)
                     soup = data_scraper_redirect(scraper, url)
                     if soup:
-                        script_tag = soup.find('script', type='application/ld+json')
+                        script_tags = soup.find_all('script')
+                        for script_tag in script_tags:
+                            if script_tag.string:
+                                try:
+                                    json_data = json.loads(script_tag.string)  # Parse the JSON data
+                                    if 'author' in json_data:
+                                        authors_info = json_data['author']
+                                        if authors_info:
+                                            for author in authors_info:
+                                                authors_list.append(author['name'])
+                                            # affiliation
+                                            for affiliation in authors_info:
+                                                affiliation_list.append(affiliation['affiliation'])
+                                        # title
+                                        title = json_data['name']
+                                        # date
+                                        publication_date = json_data['datePublished']
+                                        # publication_title
+                                        journal_title = json_data['isPartOf']['isPartOf']['name']
+                                except:
+                                    continue
+
                         # Parse the JSON data
-                        json_text = script_tag.string or script_tag.text  # Get the text content of the script tag
-                        json_data = json.loads(json_text)  # Parse the JSON data
+                       # json_text = script_tag.string or script_tag.text  # Get the text content of the script tag
                         #authors
-                        authors_info = json_data['author']
-                        if authors_info:
-                            for author in authors_info:
-                                authors_list.append(author['name'])
-                            #affiliation
-                            for affiliation in authors_info:
-                                affiliation_list.append(affiliation['affiliation'])
-                        #title
-                        title = json_data['name']
-                        #date
-                        publication_date = json_data['datePublished']
-                        #publication_title
-                        journal_title = json_data['isPartOf']['isPartOf']['name']
                         #volumn
                         volume_tag = soup.find('meta', attrs={'name': 'citation_volume'})
                         volume = volume_tag['content']
@@ -214,7 +222,7 @@ def taiwan_filter(journal_name):
 
 if __name__ == '__main__':
     #範例
-    journal_list = ["test"]
+    journal_list = ["The Quarterly Journal of Economics","The Review of Financial Studies"]
     for journal in journal_list:
         data_check(journal, redo=False, start=0)
         taiwan_filter(journal)
