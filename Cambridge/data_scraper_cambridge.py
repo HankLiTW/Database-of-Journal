@@ -1,4 +1,4 @@
-#Chicago
+#Cambridge
 import traceback
 import cloudscraper
 import pandas as pd
@@ -10,7 +10,7 @@ import re
 
 def data_scraper_redirect(scraper, url):
     response = scraper.get(url)
-    random_wait_time = random.uniform(5, 10)
+    random_wait_time = random.uniform(4, 8)
     time.sleep(random_wait_time)
     if response.status_code == 200:
         page_source = response.text
@@ -58,34 +58,35 @@ def data_check(journal_name, redo=False, start=0):
                     time.sleep(random_wait_time)
                     soup = data_scraper_redirect(scraper, url)
                     if soup:
-                        authors = soup.find_all(class_='author-name')
-                        affiliations = soup.find_all(class_='author-info')
-                        if authors:
-                            for author in authors:
-                                author_name = author.get_text(strip=True)
-                                authors_list.append(author_name)
-                        if affiliations:
-                            for affiliation in affiliations:
-                                affiliation_name = affiliation.find('p', string=True).get_text(strip=True)
-                                affiliation_list.append(affiliation_name)
-                        # other information
+                        author_divs = soup.find_all('div', class_='row author')
+                        if author_divs:
+                        # Loop through each author div to extract author name and affiliation
+                            for author_div in author_divs:
+                                if author_div.find('dt', class_='col-12 col-sm-2 title'):
+                                    author_name = author_div.find('dt', class_='col-12 col-sm-2 title').text
+                                    authors_list.append(author_name)
+                                if author_div.find('span', class_='content__title').find_next('span'):
+                                    affiliation = author_div.find('span', class_='content__title').find_next('span').text
+                                    affiliation_list.append(affiliation)
+
+                        #other information
+                        if soup.find('meta', {'name': 'citation_title'}):
+                            title = soup.find('meta', {'name': 'citation_title'})['content']
+                        else :
+                            title = 0
+                        if soup.find('meta', {'name': 'citation_publication_date'}):
+                            publication_date = soup.find('meta', {'name': 'citation_publication_date'})['content']
+                        else:
+                            publication_date = 0
+                        if soup.find('meta', {'name': 'citation_volume'}):
+                            volume = soup.find('meta', {'name': 'citation_volume'})['content']
+                        else:
+                            volume = 0
                         if soup.find('meta', {'name': 'citation_journal_title'}):
                             journal_title = soup.find('meta', {'name': 'citation_journal_title'})['content']
                         else:
                             journal_title = 0
-                        if soup.find('meta', {'name': 'dc.Title'}):
-                            title = soup.find('meta', {'name': 'dc.Title'})['content']
-                        else:
-                            title = 0
-                        if soup.find('meta', {'name': 'dc.Date'}):
-                            publication_date = soup.find('meta', {'name': 'dc.Date'})['content']
-                        else:
-                            publication_date = 0
-                        if soup.find(class_='article__breadcrumbs separator'):
-                            volume_text = soup.find(class_='article__breadcrumbs separator').text
-                            volume = re.search(r'Volume (\d+),', volume_text).group(1)
-                        else:
-                            volume = 0
+
                         # integrate
                         authors_str = '; '.join(authors_list)
                         author_institutions_str = '; '.join(affiliation_list)
