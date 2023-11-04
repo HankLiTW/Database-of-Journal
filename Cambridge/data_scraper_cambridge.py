@@ -1,5 +1,6 @@
+#Cambridge
 import traceback
-from selenium import webdriver
+import cloudscraper
 import pandas as pd
 import random
 import time
@@ -7,28 +8,16 @@ from bs4 import BeautifulSoup
 import re
 
 
-def data_driver(driver, url):
-    with open('stealth.min.js', "r") as f:
-        js = f.read()
-        driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
-            "source": js
-        })
-
-    driver.get(url)
-    # sleep
-    random_wait_time = random.uniform(5, 10)
+def data_scraper_redirect(scraper, url):
+    response = scraper.get(url)
+    random_wait_time = random.uniform(4, 8)
     time.sleep(random_wait_time)
-    page_source = driver.page_source
-    soup = BeautifulSoup(page_source, 'html.parser')
-    """
-    encoded_url = soup.find('input', {'id': 'redirectURL'})['value']
-    redirect_url = urllib.parse.unquote(encoded_url)
-    random_wait_time = random.uniform(1,3)
-    time.sleep(random_wait_time)
-    response = scraper.get(redirect_url)
-    new_html = response.text
-    new_soup = BeautifulSoup(new_html, 'html.parser')
-    """
+    if response.status_code == 200:
+        page_source = response.text
+        soup = BeautifulSoup(page_source, 'html.parser')
+    else:
+        print("fail to open")
+        soup = None
     return soup
 
 
@@ -38,15 +27,17 @@ def data_check(journal_name, redo=False, start=0):
     result_df = pd.DataFrame(columns=columns)
     # record error
     error_occur = False
+    # create scraper
+    scraper = cloudscraper.create_scraper()
     if redo == False:
         df = pd.read_csv(f"{journal_name}_api.csv")
         result_df['URL'] = df['URL']
     else:
         df = pd.read_csv(f"{journal_name}.csv")
         result_df = df
-
     count = start + 1
     total = len(df["URL"])
+
     for index, row in result_df.iloc[start:].iterrows():
         url = row["URL"]
         print(url)
@@ -56,64 +47,61 @@ def data_check(journal_name, redo=False, start=0):
         if pd.isna(affiliation):
             print("open")
             try:
-                # create scraper
-                driver = webdriver.Chrome()
-                # sleep not to be detected
-                random_wait_object = random.uniform(1, 100)
-                if count % 100 == random_wait_object:
-                    random_wait_time = random.uniform(60, 80)
-                elif count % 500 == 0 and count != 0:
-                    random_wait_time = random.uniform(600, 800)
-                else:
-                    random_wait_time = random.uniform(1, 2)
-                time.sleep(random_wait_time)
-                soup = data_driver(driver, url)
-                if soup:
-                    # authors and affiliations
-                    authors = soup.find_all(class_='author-name')
-                    affiliations = soup.find_all(class_='author-info')
-                    if authors:
-                        for author in authors:
-                            author_name = author.get_text(strip=True)
-                            authors_list.append(author_name)
-                    if affiliations:
-                        for affiliation in affiliations:
-                            affiliation_name = affiliation.find('p', string=True).get_text(strip=True)
-                            affiliation_list.append(affiliation_name)
-                    # other information
-                    if soup.find('meta', {'name': 'citation_journal_title'}):
-                        journal_title = soup.find('meta', {'name': 'citation_journal_title'})['content']
+                    # sleep not to be detected
+                    random_wait_object = random.uniform(1, 100)
+                    if count % 100 == random_wait_object:
+                        random_wait_time = random.uniform(60, 80)
+                    elif count % 500 == 0 and count != 0:
+                        random_wait_time = random.uniform(600, 800)
                     else:
-                        journal_title = 0
-                    if soup.find('meta', {'name': 'dc.Title'}):
-                        title = soup.find('meta', {'name': 'dc.Title'})['content']
-                    else:
-                        title = 0
-                    if soup.find('meta', {'name': 'dc.Date'}):
-                        publication_date = soup.find('meta', {'name': 'dc.Date'})['content']
-                    else:
-                        publication_date = 0
-                    if soup.find(class_='article__breadcrumbs separator'):
-                        volume_text = soup.find(class_='article__breadcrumbs separator').text
-                        volume = re.search(r'Volume (\d+),', volume_text).group(1)
-                    else:
-                        volume = 0
-                    # integrate
-                    authors_str = '; '.join(authors_list)
-                    author_institutions_str = '; '.join(affiliation_list)
-                    # update df
-                    result_df.loc[index] = [authors_str, author_institutions_str, publication_date, journal_title,
-                                            title, volume, url]
-                    print(result_df.iloc[index])
-                    if error_occur == False:
-                        result_df.to_csv(f'{journal_name}.csv', index=False)
-                        print('success, the file has been stored.', count, "/", total)
-                    driver.quit()
+                        random_wait_time = random.uniform(1,2)
+                    time.sleep(random_wait_time)
+                    soup = data_scraper_redirect(scraper, url)
+                    if soup:
+                        author_divs = soup.find_all('div', class_='row author')
+                        if author_divs:
+                        # Loop through each author div to extract author name and affiliation
+                            for author_div in author_divs:
+                                if author_div.find('dt', class_='col-12 col-sm-2 title'):
+                                    author_name = author_div.find('dt', class_='col-12 col-sm-2 title').text
+                                    authors_list.append(author_name)
+                                if author_div.find('span', class_='content__title').find_next('span'):
+                                    affiliation = author_div.find('span', class_='content__title').find_next('span').text
+                                    affiliation_list.append(affiliation)
+
+                        #other information
+                        if soup.find('meta', {'name': 'citation_title'}):
+                            title = soup.find('meta', {'name': 'citation_title'})['content']
+                        else :
+                            title = 0
+                        if soup.find('meta', {'name': 'citation_publication_date'}):
+                            publication_date = soup.find('meta', {'name': 'citation_publication_date'})['content']
+                        else:
+                            publication_date = 0
+                        if soup.find('meta', {'name': 'citation_volume'}):
+                            volume = soup.find('meta', {'name': 'citation_volume'})['content']
+                        else:
+                            volume = 0
+                        if soup.find('meta', {'name': 'citation_journal_title'}):
+                            journal_title = soup.find('meta', {'name': 'citation_journal_title'})['content']
+                        else:
+                            journal_title = 0
+
+                        # integrate
+                        authors_str = '; '.join(authors_list)
+                        author_institutions_str = '; '.join(affiliation_list)
+                        # update df
+                        result_df.loc[index] = [authors_str, author_institutions_str, publication_date, journal_title,
+                                                title, volume, url]
+                        print(result_df.iloc[index])
+                        if error_occur == False:
+                            result_df.to_csv(f'{journal_name}.csv', index=False)
+                            print('success, the file has been stored.', count, "/", total)
             except Exception as e:
-                traceback.print_exc()
-                print(f"An error occurred: {e}", count, "/", total)
+                    traceback.print_exc()
+                    print(f"An error occurred: {e}", count, "/", total)
             finally:
-                count += 1
+                    count += 1
         else:
             count += 1
             print(f"Skipping {url} as Affiliations is not empty.", count, "/", total)
@@ -235,7 +223,7 @@ def taiwan_filter(journal_name):
 
 if __name__ == '__main__':
     #範例
-    journal_list = ["Journal of Labor Economics"]
+    journal_list = ["test"]
     for journal in journal_list:
         data_check(journal, redo=False, start=0)
         taiwan_filter(journal)
