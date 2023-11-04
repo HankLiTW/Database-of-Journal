@@ -68,10 +68,16 @@ def data_check(journal_name, redo=False, start=0):
                                         authors_info = json_data['author']
                                         if authors_info:
                                             for author in authors_info:
-                                                authors_list.append(author['name'])
+                                                if author['name']:
+                                                    authors_list.append(author['name'])
+                                                else:
+                                                    authors_list.append(0)
                                             # affiliation
                                             for affiliation in authors_info:
-                                                affiliation_list.append(affiliation['affiliation'])
+                                                if affiliation['affiliation']:
+                                                    affiliation_list.append(affiliation['affiliation'])
+                                                else:
+                                                    affiliation_list.append(0)
                                         # title
                                         title = json_data['name']
                                         # date
@@ -86,7 +92,10 @@ def data_check(journal_name, redo=False, start=0):
                         #authors
                         #volumn
                         volume_tag = soup.find('meta', attrs={'name': 'citation_volume'})
-                        volume = volume_tag['content']
+                        if volume_tag:
+                            volume = volume_tag['content']
+                        else:
+                            volume = 0
                         #integrate
                         authors_str = '; '.join(authors_list)
                         author_institutions_str = '; '.join(affiliation_list)
@@ -222,7 +231,7 @@ def taiwan_filter(journal_name):
 
 if __name__ == '__main__':
     #範例
-    journal_list = ["The Quarterly Journal of Economics","The Review of Financial Studies"]
+    journal_list = ["The Review of Economic Studies","Review of Finance"]
     for journal in journal_list:
-        data_check(journal, redo=False, start=0)
+        data_check(journal, redo=True, start=0)
         taiwan_filter(journal)
