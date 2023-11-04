@@ -35,7 +35,7 @@ def data_check(journal_name, redo=False, start=0):
     else:
         df = pd.read_csv(f"{journal_name}.csv")
         result_df = df
-    count = start
+    count = start + 1
     total = len(df["URL"])
 
     for index, row in result_df.iloc[start:].iterrows():
@@ -69,9 +69,18 @@ def data_check(journal_name, redo=False, start=0):
                                 affiliation_name = affiliation.find('p', string=True).get_text(strip=True)
                                 affiliation_list.append(affiliation_name)
                         # other information
-                        journal_title = soup.find('meta', {'name': 'citation_journal_title'})['content']
-                        title = soup.find('meta', {'name': 'dc.Title'})['content']
-                        publication_date = soup.find('meta', {'name': 'dc.Date'})['content']
+                        if soup.find('meta', {'name': 'citation_journal_title'}):
+                            journal_title = soup.find('meta', {'name': 'citation_journal_title'})['content']
+                        else:
+                            journal_title = 0
+                        if soup.find('meta', {'name': 'dc.Title'}):
+                            title = soup.find('meta', {'name': 'dc.Title'})['content']
+                        else:
+                            title = 0
+                        if soup.find('meta', {'name': 'dc.Date'}):
+                            publication_date = soup.find('meta', {'name': 'dc.Date'})['content']
+                        else:
+                            publication_date = 0
                         if soup.find(class_='article__breadcrumbs separator'):
                             volume_text = soup.find(class_='article__breadcrumbs separator').text
                             volume = re.search(r'Volume (\d+),', volume_text).group(1)
