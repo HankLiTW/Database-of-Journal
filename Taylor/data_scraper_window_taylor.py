@@ -228,7 +228,7 @@ def taiwan_filter(journal_name):
 
 
 if __name__ == '__main__':
-    journal_list = ["test"]
+    journal_list = ["Journal of Business and Economic Statistics"]
     for journal in journal_list:
-        data_check(journal, redo=False, start=0)
+        data_check(journal, redo=True, start=272)
         taiwan_filter(journal)
