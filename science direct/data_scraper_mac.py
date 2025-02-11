@@ -226,13 +226,13 @@ def taiwan_filter(journal_name):
 
     journal = pd.read_csv(f"{journal_name}.csv")
     print("open success")
-    # 创建一个条件以判断"Institutions"列是否包含台湾排名前四十大学、"Academia Sinica"和"Jinan University"
+    # Conditions for filtering
     has_taiwan_institutions = journal["Affiliation"].str.contains("|".join(taiwan_universities), case=False, na=False)
 
-    # 筛选包含台湾排名前四十大学、"Academia Sinica"和"Jinan University"的行
+    # Filter
     data_taiwan = journal[has_taiwan_institutions]
 
-    # 保存包含台湾排名前四十大学、"Academia Sinica"和"Jinan University"的行为一个新的CSV文件
+    # Save CSV
     file_taiwan = f"{journal_name}_taiwan_scholar.csv"
     data_taiwan.to_csv(file_taiwan, index=False)
 
@@ -240,7 +240,6 @@ def taiwan_filter(journal_name):
 
 
 if __name__ == '__main__':
-    #範例
     journal_list = ["Journal of Financial Economics"]
     for journal in journal_list:
         data_check(journal, redo=False, start=0)
